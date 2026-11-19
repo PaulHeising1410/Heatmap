@@ -121,6 +121,7 @@ textarea{width:100%;height:100px;background:var(--bg);border:1px solid var(--lin
 </header>
 <div class="chips">
   <div class="seg" data-k="scope" id="scopeSeg"><button data-v="all">Alle</button><button data-v="mine">★ Meine</button></div>
+  <div class="seg" data-k="src"><button data-v="auto">Auto</button><button data-v="tg">Tradegate</button><button data-v="us">US</button><button data-v="ext">US+</button></div>
   <div class="seg" data-k="group"><button data-v="ind">Sektor + Branche</button><button data-v="sector">Sektor</button><button data-v="none">Ohne</button></div>
   <div class="seg" data-k="size"><button data-v="cap">Marktkap.</button><button data-v="equal">Gleich groß</button></div>
   <div class="seg" data-k="scale"><button data-v="1">±1 %</button><button data-v="2">±2 %</button><button data-v="3">±3 %</button><button data-v="5">±5 %</button></div>
@@ -154,6 +155,11 @@ textarea{width:100%;height:100px;background:var(--bg);border:1px solid var(--lin
     <input class="f" id="q" placeholder="Suchen (Ticker oder Name)" autocomplete="off" autocorrect="off" spellcheck="false" style="margin-bottom:8px">
     <div id="list"></div>
 
+    <h4>Datenquellen</h4>
+    <p class="hint"><b>Auto</b> wählt nach Uhrzeit: bis US-Eröffnung <b>Tradegate</b> (EUR, Echtzeit), während der US-Börse <b>US</b> (Finnhub), danach <b>US+</b> (US-Nachbörse über Yahoo). Rohstoffe & Bitcoin kommen mit Worker immer als Future-/Spotkurs über Yahoo. Tradegate und US+ brauchen deinen Cloudflare Worker.</p>
+    <span class="lab">Worker-Adresse</span>
+    <div class="row"><input class="f" id="workerUrl" placeholder="https://heatmap-proxy.….workers.dev" autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false" inputmode="url"><button class="btn" id="saveWorker">Testen</button></div>
+    <p class="hint" id="workerInfo"></p>
     <h4>Live-Daten (Finnhub)</h4>
     <p class="hint">Mit deinem Finnhub-Schlüssel werden Kurs, Tagesveränderung, Tagesspanne und Marktkapitalisierung automatisch geladen. Der Gratis-Zugang erlaubt etwa 60 Abrufe pro Minute – bei großen Watchlists lädt die App deshalb in Etappen.</p>
     <div class="row"><input class="f" id="apiKey" placeholder="Finnhub API-Key" autocomplete="off" autocorrect="off" spellcheck="false"><button class="btn" id="saveKey">Speichern</button></div>
@@ -214,11 +220,15 @@ const FH={"Technology":["IT",0],"Semiconductors":["IT",1],"Software":["IT",0],"C
 "Transportation Infrastructure":["IND",4],"Construction":["IND",5],"Building":["IND",5],"Commercial Services & Supplies":["IND",6],"Professional Services":["IND",6],"Trading Companies & Distributors":["IND",7],"Distributors":["IND",7],
 "Energy":["EN",0],"Utilities":["UT",0],"Real Estate":["RE",0],"Chemicals":["MAT",0],"Metals & Mining":["MAT",1],"Packaging":["MAT",3]};
 /* Rohstoffe & Krypto: Kurs über ETF-Proxy (Gratis-Zugang), Krypto zuerst direkt */
-const ASSETS={GOLD:["Gold",0,["GLD"]],SILBER:["Silber",0,["SLV"]],PLATIN:["Platin",0,["PPLT"]],KUPFER:["Kupfer",1,["CPER"]],
-  WTI:["Öl WTI",2,["USO"]],BRENT:["Öl Brent",2,["BNO"]],ERDGAS:["Erdgas",2,["UNG"]],BTC:["Bitcoin",3,["BINANCE:BTCUSDT","IBIT"]]};
+const ASSETS={GOLD:["Gold",0,["GLD"],"GC=F"],SILBER:["Silber",0,["SLV"],"SI=F"],PLATIN:["Platin",0,["PPLT"],"PL=F"],KUPFER:["Kupfer",1,["CPER"],"HG=F"],
+  WTI:["Öl WTI",2,["USO"],"CL=F"],BRENT:["Öl Brent",2,["BNO"],"BZ=F"],ERDGAS:["Erdgas",2,["UNG"],"NG=F"],BTC:["Bitcoin",3,["BINANCE:BTCUSDT","IBIT"],"BTC-USD"]};
+/* ISINs für Tradegate (Prüfziffer geprüft; falsche werden zur Laufzeit per Kursvergleich erkannt) */
+const ISIN={"AAPL":"US0378331005","MSFT":"US5949181045","NVDA":"US67066G1040","AMZN":"US0231351067","GOOGL":"US02079K3059","GOOG":"US02079K1079","META":"US30303M1027","TSLA":"US88160R1014","AVGO":"US11135F1012","ORCL":"US68389X1054","CRM":"US79466L3024","ADBE":"US00724F1012","AMD":"US0079031078","CSCO":"US17275R1023","ACN":"IE00B4BNMY34","IBM":"US4592001014","INTU":"US4612021034","NOW":"US81762P1021","QCOM":"US7475251036","TXN":"US8825081040","AMAT":"US0382221051","LRCX":"US5128073062","KLAC":"US4824801009","MU":"US5951121038","INTC":"US4581401001","ADI":"US0326541051","PANW":"US6974351057","CRWD":"US22788C1053","PLTR":"US69608A1088","ANET":"US0404132054","SNPS":"US8716071076","CDNS":"US1273871087","APH":"US0320951017","DELL":"US24703L2025","SMCI":"US86800U3023","MRVL":"US5738741041","ASML":"NL0010273215","TSM":"US8740391003","FTNT":"US34959E1091","ADSK":"US0527691069","WDAY":"US98138H1014","APP":"US03831W1080","SNOW":"US8334451098","MSTR":"US5949724083","ARM":"US0420682058","NBIS":"NL0009805522","CRWV":"US21873S1087","DDOG":"US23804L1035","LITE":"US55024U1097","ZS":"US98980G1022","NET":"US18915M1071","IFNNY":"DE0006231004","TOELY":"JP3571400005","NFLX":"US64110L1061","DIS":"US2546871060","TMUS":"US8725901040","VZ":"US92343V1044","T":"US00206R1023","CMCSA":"US20030N1019","SPOT":"LU1778762911","HD":"US4370761029","MCD":"US5801351017","LOW":"US5486611073","BKNG":"US09857L1089","TJX":"US8725401090","SBUX":"US8552441094","NKE":"US6541061031","ABNB":"US0090661010","CMG":"US1696561059","AZO":"US0533321024","GM":"US37045V1008","F":"US3453708600","MELI":"US58733R1023","MAR":"US5719032022","DASH":"US25809K1051","WMT":"US9311421039","COST":"US22160K1051","PG":"US7427181091","KO":"US1912161007","PEP":"US7134481081","PM":"US7181721090","MO":"US02209S1033","MDLZ":"US6092071058","CL":"US1941621039","KDP":"US49271V1008","MNST":"US61174X1090","LLY":"US5324571083","JNJ":"US4781601046","UNH":"US91324P1021","ABBV":"US00287Y1091","MRK":"US58933Y1055","PFE":"US7170811035","TMO":"US8835561023","ABT":"US0028241000","ISRG":"US46120E6023","AMGN":"US0311621009","DHR":"US2358511028","GILD":"US3755581036","VRTX":"US92532F1003","BSX":"US1011371077","SYK":"US8636671013","BMY":"US1101221083","CVS":"US1266501006","NVO":"US6701002056","MDT":"IE00BTN1Y115","REGN":"US75886F1075","BRK.B":"US0846707026","JPM":"US46625H1005","V":"US92826C8394","MA":"US57636Q1040","BAC":"US0605051046","WFC":"US9497461015","GS":"US38141G1040","MS":"US6174464486","AXP":"US0258161092","BLK":"US09290D1019","SCHW":"US8085131055","C":"US1729674242","PYPL":"US70450Y1038","COIN":"US19260Q1076","HOOD":"US7707001027","GE":"US3696043013","CAT":"US1491231015","RTX":"US75513E1010","HON":"US4385161066","UNP":"US9078181081","BA":"US0970231058","LMT":"US5398301094","DE":"US2441991054","UPS":"US9113121068","ETN":"IE00B8KQN827","GEV":"US36828A1016","UBER":"US90353T1007","ADP":"US0530151036","NOC":"US6668071029","GD":"US3695501086","MMM":"US88579Y1010","FDX":"US31428X1063","VRT":"US92537N1081","BE":"US0937121079","2GB":"DE000A0HL8N9","XOM":"US30231G1022","CVX":"US1667641005","COP":"US20825C1045","SLB":"AN8068571086","OXY":"US6745991058","BKR":"US05722G1004","NEE":"US65339F1012","SO":"US8425871071","DUK":"US26441C2044","CEG":"US21037T1097","VST":"US92840M1027","AEP":"US0255371017","EXC":"US30161N1019","XEL":"US98389B1008","LIN":"IE000S9YS762","ALNY":"US02043Q1076","AXON":"US05464C1018","CCEP":"GB00BDCPN049","CPRT":"US2172041061","CSX":"US1264081035","CTAS":"US1729081059","DXCM":"US2521311074","FANG":"US25278X1090","FAST":"US3119001044","GEHC":"US36266G1076","IDXX":"US45168D1046","MCHP":"US5950171042","MRNA":"US60770K1079","MPWR":"US6098391054","NXPI":"NL0009538784","ODFL":"US6795801009","PCAR":"US6937181088","PAYX":"US7043261079","PDD":"US7223041028","RKLB":"US7731221062","ROP":"US7766961061","ROST":"US7782961038","STX":"IE00BKVD2N49","WDC":"US9581021055","SHOP":"CA82509L1076","TTWO":"US8740541094","TER":"US8807701029","TRI":"CA8849038085","ORLY":"US67103H1077","ALAB":"US04626A1034","SNDK":"US80004C2008","FER":"NL0015001FS8"};
+const LOCAL={"2GB":1,IFNNY:1,TOELY:1};      // Tradegate-ISIN gehört zur Heimatbörse (anderer Kurs als US-ADR)
+const YH={"2GB":"2GB.DE"};
 const ALIAS={SILVER:"SILBER",PLATINUM:"PLATIN",COPPER:"KUPFER",OIL:"WTI","ÖL":"WTI",OEL:"WTI",GAS:"ERDGAS",NATGAS:"ERDGAS",BITCOIN:"BTC"};
 function classify(t){t=ALIAS[t]||t;const a=ASSETS[t];if(a)return {t,n:a[0],sec:"CMD",ind:SECTORS.CMD.ind[a[1]],asset:true};
-  const k=KNOWN[t];if(!k)return null;const c={n:k[0],sec:k[1],ind:SECTORS[k[1]].ind[k[2]]};if(k[3])c.manual=true;return c}
+  const k=KNOWN[t];if(!k)return null;const c={n:k[0],sec:k[1],ind:SECTORS[k[1]].ind[k[2]]};if(k[3])c.nous=true;if(ISIN[t])c.isin=ISIN[t];return c}
 
 const DEMO=[["AAPL",3500,.8],["MSFT",3300,-.6],["NVDA",4200,2.4],["AVGO",1300,1.6],["ORCL",700,-1.1],["AMZN",2300,-.3],["TSLA",1100,-3.1],["HD",380,.3],["GOOGL",2500,.4],["META",1700,1.1],["NFLX",450,-.8],
   ["JPM",700,.2],["V",650,-.4],["BAC",340,.6],["LLY",750,-1.8],["UNH",300,-2.2],["ISRG",190,1.0],["WMT",780,.5],["COST",410,-.2],["GE",290,1.4],["CAT",200,2.1],["XOM",470,-.9],["NEE",160,.7],["LIN",210,.1]]
@@ -227,14 +237,15 @@ const DEMO=[["AAPL",3500,.8],["MSFT",3300,-.6],["NVDA",4200,2.4],["AVGO",1300,1.
 /* ===== Zustand ===== */
 const store={get(k,d){try{const v=localStorage.getItem("hm_"+k);return v?JSON.parse(v):d}catch(e){return d}},set(k,v){try{localStorage.setItem("hm_"+k,JSON.stringify(v))}catch(e){}}};
 let stocks=store.get("stocks",null)||DEMO.map(o=>({...o}));
-let settings=Object.assign({size:"cap",group:"ind",scale:"3",auto:"0",scope:"all",boost:"1"},store.get("settings",{}));
+let settings=Object.assign({size:"cap",group:"ind",scale:"3",auto:"0",scope:"all",boost:"1",src:"auto"},store.get("settings",{}));
 if(settings.group==="sector"&&!store.get("v2",false))settings.group="ind";
-let apiKey=store.get("key",""),lastUpdate=store.get("updated",null);
+let workerUrl=store.get("worker",""),apiKey=store.get("key",""),lastUpdate=store.get("updated",null);
 let path=[]; // Zoom-Pfad: [] | [Sektor] | [Sektor, Branche]
 /* Migration alter Listen (Feld s → sec/ind) */
 const OLD={"Technologie":"IT","Halbleiter":"IT","Software":"IT","Konsum":"CD","Kommunikation":"COM","Finanzen":"FIN","Gesundheit":"HC","Industrie":"IND","Energie":"EN"};
 stocks.forEach(s=>{if(!s.sec){const c=classify(s.t);if(c){s.sec=c.sec;s.ind=c.ind;if(!s.n)s.n=c.n}else{s.sec=OLD[s.s]||"OTH";s.ind=""}}delete s.s});
 stocks.forEach(s=>{if(["PANW","CRWD","FTNT","ZS"].includes(s.t)&&s.ind==="Software")s.ind="Cybersecurity"});
+stocks.forEach(s=>{if(s.t==="2GB"&&s.manual&&!s.nous){s.manual=false;s.nous=true}if(s.isin===undefined&&ISIN[s.t])s.isin=ISIN[s.t];if(KNOWN[s.t]&&KNOWN[s.t][3])s.nous=true;if(ASSETS[s.t]&&!s.asset){s.asset=true;s.sec="CMD";s.ind=SECTORS.CMD.ind[ASSETS[s.t][1]];s.cap=null}});
 store.set("v2",true);save();
 const $=id=>document.getElementById(id);
 const canHover=matchMedia("(hover:hover) and (pointer:fine)").matches;
@@ -246,6 +257,8 @@ function color(dp){const t=Math.max(-1,Math.min(1,(dp||0)/+settings.scale)),to=t
 const fmtPct=v=>(v>0?"+":"")+(+v||0).toFixed(2).replace(".",",")+" %";
 const fmtCap=v=>v>=1000?(v/1000).toFixed(2).replace(".",",")+" Bio.":Math.round(v).toLocaleString("de-DE")+" Mrd.";
 const fmtNum=v=>v==null?"–":(+v).toLocaleString("de-DE",{minimumFractionDigits:2,maximumFractionDigits:2});
+const fmtPx=s=>fmtNum(s.c)+(s.cur==="EUR"?" €":" $");
+const fmtT=ms=>ms?new Date(ms).toLocaleTimeString("de-DE",{hour:"2-digit",minute:"2-digit"}):"";
 const esc=s=>String(s??"").replace(/[&<>"]/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;"}[c]));
 const pcCol=v=>(v||0)>=0?"var(--up)":"var(--down)";
 let medCap=100;
@@ -319,7 +332,7 @@ function tile(r){
     let h=`<div class="t" style="font-size:${fs}px">${esc(s.t)}${!s.idx&&settings.scope==="all"&&stocks.some(o=>o.idx)&&r.w>fs*3?`<span style="font-size:${Math.max(8,fs*.45)}px;color:#ffd166;vertical-align:super"> ★</span>`:""}</div>`;
     if(r.h>fs*2.1&&r.w>34)h+=`<div class="p" style="font-size:${Math.max(9,fs*.56)}px">${fmtPct(s.dp)}</div>`;
     if(r.h>fs*3.4&&r.w>80&&s.n)h+=`<div class="n">${esc(s.n)}</div>`;
-    if(r.h>fs*4.2&&r.w>90&&s.h>s.l){const p=v=>Math.max(0,Math.min(100,(v-s.l)/(s.h-s.l)*100));h+=`<div class="range"><b style="left:${p(s.o)}%"></b><i style="left:${p(s.c)}%"></i></div>`}
+    if(r.h>fs*4.2&&r.w>90&&s.h>s.l){const p=v=>Math.max(0,Math.min(100,(v-s.l)/(s.h-s.l)*100));h+=`<div class="range">${s.o!=null?`<b style="left:${p(s.o)}%"></b>`:""}<i style="left:${p(s.c)}%"></i></div>`}
     el.innerHTML=h;
   }
   if(canHover){el.onmousemove=e=>showTip(s,e.clientX,e.clientY);el.onmouseleave=()=>$("tip").style.display="none"}
@@ -349,14 +362,14 @@ function share(s,pool){const tot=pool.reduce((t,o)=>t+(+o.cap||0),0);return tot&
 function showTip(s,x,y){
   const t=$("tip");
   t.innerHTML=`<b>${esc(s.t)}</b> <span style="color:var(--muted)">${esc(s.n||"")}</span><div style="color:var(--muted);font-size:11px;margin:3px 0 6px">${esc(SECTORS[secOf(s)].n)} · ${esc(indOf(s))}</div>`+
-    [["Tagesveränd.",fmtPct(s.dp)],["Marktkap.",s.cap?fmtCap(+s.cap):"–"],["Anteil Watchlist",share(s,stocks)]].concat(s.c!=null?[["Kurs",fmtNum(s.c)]]:[])
+    [["Tagesveränd.",fmtPct(s.dp)],["Marktkap.",s.cap?fmtCap(+s.cap):"–"],["Anteil Watchlist",share(s,stocks)]].concat(s.c!=null?[["Kurs",fmtPx(s)],["Quelle",esc(s.src||"–")]]:[])
     .map(r=>`<div class="kv"><span>${r[0]}</span><span>${r[1]}</span></div>`).join("");
   t.style.display="block";t.style.left=Math.min(x+14,innerWidth-t.offsetWidth-8)+"px";t.style.top=Math.min(y+14,innerHeight-t.offsetHeight-8)+"px";
 }
 function legend(){const r=+settings.scale;$("legbar").innerHTML=[-1,-.5,0,.5,1].map(t=>`<span style="background:${color(t*r)}">${(t>0?"+":"")+String(+(t*r).toFixed(1)).replace(".",",")}</span>`).join("")}
 function status(){
   const w=avg(scoped().filter(s=>s.t&&!s.asset));
-  $("status").innerHTML=`${settings.scope==="mine"?"Meine":"Alle"} <b style="color:${pcCol(w)}">${fmtPct(w)}</b> · ${lastUpdate?"Live "+new Date(lastUpdate).toLocaleTimeString("de-DE",{hour:"2-digit",minute:"2-digit"}):"manuelle Werte"}`;
+  $("status").innerHTML=`${settings.scope==="mine"?"Meine":"Alle"} <b style="color:${pcCol(w)}">${fmtPct(w)}</b> · ${lastUpdate?`${esc(lastSrc||"Live")} ${fmtT(lastUpdate)}`:"manuelle Werte"}${settings.src==="auto"?` · Auto→${MODE_N[resolveMode()]}`:""}`;
   const secs=new Set(stocks.map(secOf)).size;
   const na=stocks.filter(s=>s.asset).length;$("sub").textContent=`${stocks.length-na} Aktien${na?` · ${na} Rohstoffe`:""} · ${secs} Sektoren`;
 }
@@ -386,13 +399,14 @@ function openDetail(s){
   selected=s;render();
   $("dTitle").innerHTML=`${esc(s.t)} <span style="color:var(--muted);font-weight:400;font-size:14px">${esc(s.n||"")}</span>`;
   const peers=stocks.filter(o=>secOf(o)===secOf(s));
-  let h=`<div class="big"><span class="pc" style="color:${pcCol(s.dp)}">${fmtPct(s.dp)}</span>${s.c!=null?`<span class="px">${fmtNum(s.c)}</span>`:""}</div>`;
+  let h=`<div class="big"><span class="pc" style="color:${pcCol(s.dp)}">${fmtPct(s.dp)}</span>${s.c!=null?`<span class="px">${fmtPx(s)}</span>`:""}</div>${s.src?`<p class="hint" style="margin-top:-6px">Quelle: ${esc(s.src)}${s.qt?" · "+fmtT(s.qt):""}${s.src.startsWith("US nach")||s.src.startsWith("US vor")?" · Veränderung ggü. letztem US-Schluss":""}${s.src==="Tradegate"?" · ggü. Tradegate-Schluss Vortag":""}</p>`:""}`;
   if(s.h>s.l){const p=v=>Math.max(0,Math.min(100,(v-s.l)/(s.h-s.l)*100));
-    h+=`<span class="lab">Tagesspanne (Strich = Eröffnung, weiß = aktuell)</span><div class="rng"><b style="left:${p(s.o)}%"></b><i style="left:${p(s.c)}%"></i><em style="left:0">${fmtNum(s.l)}</em><em style="right:0">${fmtNum(s.h)}</em></div>`}
-  if(s.asset){const via=s.symOk||(ASSETS[s.t]||[])[2]?.[0]||"";
+    h+=`<span class="lab">Tagesspanne (${s.o!=null?"Strich = Eröffnung, ":""}weiß = aktuell)</span><div class="rng">${s.o!=null?`<b style="left:${p(s.o)}%"></b>`:""}<i style="left:${p(s.c)}%"></i><em style="left:0">${fmtNum(s.l)}</em><em style="right:0">${fmtNum(s.h)}</em></div>`}
+  if(s.asset&&s.src==="Yahoo Future"){h+=`<p class="hint">Kurs über ${s.t==="BTC"?"Bitcoin-Spotkurs (BTC-USD)":"Terminkontrakt "+esc((ASSETS[s.t]||[])[3]||"")+" (handelt fast rund um die Uhr)"}. Die Kachelgröße ist fest und lässt sich unten anpassen.</p>`}
+  else if(s.asset){const via=s.symOk||(ASSETS[s.t]||[])[2]?.[0]||"";
     h+=`<p class="hint">Tagesveränderung über ${esc(via.replace("BINANCE:","Binance "))}${via.includes(":")?"":"-ETF"}. ${s.c!=null?`Kurs = ${via.includes(":")?"USD":"ETF-Kurs"}, nicht Spotpreis je Einheit.`:""} Die Kachelgröße ist fest (kein Marktwert) und lässt sich unten anpassen.</p>`}
   h+=[["Marktkapitalisierung",s.asset?"–":s.cap?fmtCap(+s.cap):"–"],["Anteil Watchlist",share(s,stocks)],["Anteil im Sektor",share(s,peers)],["Sektor heute",`<span style="color:${pcCol(avg(peers))}">${fmtPct(avg(peers))}</span>`]]
-    .concat(s.c!=null?[["Eröffnung",fmtNum(s.o)],["Vortag",fmtNum(s.pc)]]:[])
+    .concat(s.c!=null?[["Basis (Vortag/Schluss)",fmtNum(s.pc)]].concat(s.dayDp!=null&&s.src&&s.src!=="US"?[["Veränd. ggü. Vortag",fmtPct(s.dayDp)]]:[]):[])
     .map(r=>`<div class="kv"><span>${r[0]}</span><span>${r[1]}</span></div>`).join("");
   h+=`<h4>Zuordnung</h4><div class="g2"><div class="full"><span class="lab">GICS-Sektor</span><select class="f" id="dSec">${secOptions(secOf(s))}</select></div>
       <div class="full"><span class="lab">Branche</span><select class="f" id="dInd">${indOptions(secOf(s),s.ind)}</select></div></div>
@@ -427,16 +441,18 @@ function renderList(){
       <div><span class="lab">${s.asset?"Kachelgröße (leer = auto)":"Marktkap. (Mrd.)"}</span><input class="f" data-k="cap" type="number" inputmode="decimal" value="${s.cap??""}"></div>
       <div><span class="lab">Δ % heute</span><input class="f" data-k="dp" type="number" step="0.1" inputmode="decimal" value="${s.dp??""}"></div>
       <div class="full"><span class="lab">Name</span><input class="f" data-k="n" value="${esc(s.n)}"></div>
+      ${s.asset?"":`<div class="full"><span class="lab">ISIN für Tradegate${s.isinBad?' – <span style="color:#ffcf66">passt vermutlich nicht, bitte prüfen</span>':""}</span><input class="f" data-k="isin" value="${esc(s.isin||"")}" autocapitalize="characters" autocorrect="off" spellcheck="false"></div>`}
       <label class="full" style="display:flex;align-items:center;gap:8px;font-size:13px;color:var(--muted);margin-top:2px"><input type="checkbox" data-m ${s.manual?"checked":""} style="width:18px;height:18px"> Nur manuell pflegen (kein Live-Abruf)</label></div>`;
     bindClass(c.querySelector('[data-r="sec"]'),c.querySelector('[data-r="ind"]'),s,()=>{if(c.querySelector('[data-r="sec"]').value!==sk)renderList()});
     c.querySelector('[data-m]').onchange=e=>{s.manual=e.target.checked;save()};
     c.querySelectorAll("input.f").forEach(inp=>inp.oninput=()=>{const k=inp.dataset.k;let v=inp.value;
       if(k==="cap"||k==="dp")v=v===""?null:parseFloat(v.replace(",","."));
+      if(k==="isin"){v=v.toUpperCase().trim();s.isinBad=false}
       s[k]=v;save();render();c.querySelector(".sw").style.background=color(s.dp);if(k==="n")c.querySelector(".nm").textContent=v});
     c.querySelector(".x").onclick=()=>{stocks.splice(stocks.indexOf(s),1);save();renderList();render()};
     L.appendChild(c);
   });
-  $("io").value=JSON.stringify(stocks.map(({t,n,sec,ind,cap,dp,manual,asset,idx})=>({t,n,sec,ind,cap,dp,manual,asset,idx})));
+  $("io").value=JSON.stringify(stocks.map(({t,n,sec,ind,cap,dp,manual,asset,idx,isin})=>({t,n,sec,ind,cap,dp,manual,asset,idx,isin})));
 }
 function save(){store.set("stocks",stocks)}
 function addStock(){
@@ -460,45 +476,115 @@ async function api(p,tries=0){
   if(r.status===401||r.status===403)throw new Error("auth");
   return r.json();
 }
-let busy=false;
+let busy=false,pendingFetch=false,lastSrc=store.get("lastSrc","");
+const MODE_N={tg:"Tradegate",us:"US-Börse",ext:"US+ (Vor-/Nachbörse)"};
+function tzParts(tz){const p={};new Intl.DateTimeFormat("en-US",{timeZone:tz,hour12:false,weekday:"short",hour:"2-digit",minute:"2-digit"}).formatToParts(new Date()).forEach(x=>p[x.type]=x.value);
+  return {wd:!["Sat","Sun"].includes(p.weekday),m:(+p.hour%24)*60+(+p.minute)}}
+function autoMode(){const ny=tzParts("America/New_York"),be=tzParts("Europe/Berlin");
+  if(ny.wd&&ny.m>=570&&ny.m<960)return "us";                       // US-Börse 9:30–16:00 ET
+  if(be.wd&&be.m>=450&&be.m<1320&&!(ny.wd&&ny.m>=960))return "tg";  // Tradegate 7:30–22:00, vor US-Eröffnung
+  return "ext"}                                                     // US-Nachbörse / Nacht
+function resolveMode(){let m=settings.src==="auto"?autoMode():settings.src;if((m==="tg"||m==="ext")&&!workerUrl)m="us";if(m==="us"&&!apiKey&&workerUrl)m="ext";return m}
+const yhSym=s=>s.asset?(ASSETS[s.t]||[])[3]:(YH[s.t]||s.t.replace(".","-"));
+async function pool(arr,n,fn){let i=0;await Promise.all(Array.from({length:Math.min(n,arr.length)},async()=>{while(i<arr.length){const x=arr[i++];await fn(x)}}))}
+function applyYahoo(s,d){
+  const base=d.state==="REGULAR"||s.asset?d.prev:(d.reg??d.prev);
+  if(!d.price||!base)return false;
+  Object.assign(s,{c:d.price,o:null,h:d.state==="REGULAR"?d.hi:null,l:d.state==="REGULAR"?d.lo:null,pc:base,dp:Math.round((d.price/base-1)*10000)/100,
+    dayDp:d.prev?Math.round((d.price/d.prev-1)*10000)/100:null,cur:d.cur==="EUR"?"EUR":"USD",qt:(d.time||0)*1000||Date.now(),
+    src:s.asset?"Yahoo Future":d.state==="PRE"?"US vorbörslich":d.state==="POST"?"US nachbörslich":d.state==="REGULAR"?"US (Yahoo)":"US nachbörslich (Schluss)"});
+  if(!s.asset&&!LOCAL[s.t]&&s.cur==="USD")s.usd=d.price;
+  return true}
+function applyTg(s,d){
+  Object.assign(s,{c:d.last,o:null,h:d.high,l:d.low,pc:d.dp!=null?d.last/(1+d.dp/100):null,dp:d.dp??0,dayDp:null,cur:"EUR",qt:Date.now(),src:"Tradegate"});return true}
+async function fetchWorker(tgS,yhS,prog){
+  const items=[...tgS.map(s=>({k:"tg",id:s.isin,s})),...yhS.map(s=>({k:"yh",id:yhSym(s),s}))].filter(x=>x.id);
+  const chunks=[];for(let i=0;i<items.length;i+=25)chunks.push(items.slice(i,i+25));
+  let netErr=false;
+  await pool(chunks,2,async ch=>{
+    const tg=ch.filter(x=>x.k==="tg").map(x=>x.id),yh=ch.filter(x=>x.k==="yh").map(x=>encodeURIComponent(x.id));
+    try{const r=await fetch(`${workerUrl.replace(/\/+$/,"")}/?tg=${tg.join(",")}&yh=${yh.join(",")}`);const j=await r.json();
+      for(const x of ch){const d=(x.k==="tg"?j.tg:j.yh)?.[x.id];if(d&&!d.err)x.d=d}}
+    catch(e){netErr=true}
+    prog(ch.length);
+  });
+  let ok=0;const fail=[];
+  for(const x of items.filter(x=>x.k==="yh")){if(x.d&&applyYahoo(x.s,x.d))ok++;else fail.push(x.s)}
+  // Tradegate: falsche ISINs über das Verhältnis EUR-Kurs / US-Kurs erkennen
+  const tgx=items.filter(x=>x.k==="tg"&&x.d&&x.d.last);
+  const rs=tgx.filter(x=>x.s.usd&&!LOCAL[x.s.t]).map(x=>x.d.last/x.s.usd).sort((a,b)=>a-b);
+  const med=rs.length>=3?rs[Math.floor(rs.length/2)]:null;
+  for(const x of items.filter(x=>x.k==="tg")){
+    if(!x.d||!x.d.last){fail.push(x.s);continue}
+    if(med&&x.s.usd&&!LOCAL[x.s.t]&&Math.abs(x.d.last/x.s.usd/med-1)>.25){x.s.isinBad=true;fail.push(x.s);continue}
+    applyTg(x.s,x.d);ok++}
+  return {ok,fail,netErr}}
 async function fetchLive(list=stocks){
   list=list.filter(s=>!s.manual);
-  if(!apiKey){openEditor();setTimeout(()=>$("apiKey").focus(),300);flash("Für Live-Kurse zuerst einen Finnhub API-Key eintragen.");return}
-  if(!list.length)return;if(busy)return;busy=true;$("refresh").classList.add("spin");
-  let ok=0,fail=[],blocked=false,auth=false,i=0;
+  if(!apiKey&&!workerUrl){openEditor();setTimeout(()=>$("apiKey").focus(),300);flash("Für Live-Kurse zuerst Finnhub-Key oder Worker eintragen.");return}
+  if(!list.length)return;if(busy){pendingFetch=true;return}busy=true;pendingFetch=false;$("refresh").classList.add("spin");
+  const mode=resolveMode(),tgS=[],yhS=[],fhS=[];
   for(const s of list){
-    i++;if(list.length>5)$("status").textContent=`Lade ${i}/${list.length} …`;
+    if(s.asset){if(workerUrl)yhS.push(s);else if(apiKey)fhS.push(s);continue}
+    const tgOk=workerUrl&&s.isin&&!s.isinBad;
+    if(mode==="tg"){if(tgOk)tgS.push(s);else if(workerUrl&&!s.nous)yhS.push(s);else if(!s.nous&&apiKey)fhS.push(s)}
+    else if(mode==="ext"){if(s.nous){if(tgOk)tgS.push(s)}else if(workerUrl)yhS.push(s);else if(apiKey)fhS.push(s)}
+    else{if(s.nous){if(tgOk)tgS.push(s)}else if(apiKey)fhS.push(s);else if(workerUrl)yhS.push(s)}
+  }
+  const needProf=apiKey?list.filter(s=>!s.asset&&!s.nous&&(!s.capFetched||!s.n||s.sec==="OTH")):[];
+  const total=tgS.length+yhS.length+fhS.length+needProf.length;let done=0;
+  const prog=n=>{done+=n;if(total>5)$("status").textContent=`${MODE_N[mode]}: lade ${Math.min(done,total)}/${total} …`};
+  let ok=0,fail=[],blocked=false,auth=false,netErr=false;
+  if(tgS.length||yhS.length){const r=await fetchWorker(tgS,yhS,prog);ok+=r.ok;netErr=r.netErr;
+    // Fallback für fehlgeschlagene Tradegate-Werte: Yahoo bzw. Finnhub
+    const retry=r.fail.filter(s=>!s.asset&&!s.nous&&tgS.includes(s));
+    if(retry.length&&!r.netErr){const r2=await fetchWorker([],retry,()=>{});ok+=r2.ok;fail.push(...r2.fail.map(s=>s.t))}
+    fail.push(...r.fail.filter(s=>!retry.includes(s)).map(s=>s.t));save();render()}
+  for(const s of fhS){
     try{
       if(s.asset){const syms=ASSETS[s.t]?ASSETS[s.t][2]:[];let got=false;
         for(const sym of (s.symOk?[s.symOk]:syms)){const q=await api(`quote?symbol=${encodeURIComponent(sym)}`);
-          if(q&&q.c){Object.assign(s,{c:q.c,o:q.o,h:q.h,l:q.l,pc:q.pc,dp:q.dp,symOk:sym});got=true;break}}
-        if(got)ok++;else{fail.push(s.t);s.symOk=null}
-        continue}
-      const q=await api(`quote?symbol=${encodeURIComponent(s.t)}`);
-      if(q&&q.c){Object.assign(s,{c:q.c,o:q.o,h:q.h,l:q.l,pc:q.pc,dp:q.dp});ok++}else fail.push(s.t);
-      if(!s.capFetched||!s.n||s.sec==="OTH"){
-        const p=await api(`stock/profile2?symbol=${encodeURIComponent(s.t)}`);
-        if(p&&p.marketCapitalization){s.cap=Math.round(p.marketCapitalization/10)/100;s.capFetched=true}
-        if(p&&p.name&&!s.n)s.n=p.name;
-        if(p&&s.sec==="OTH"&&FH[p.finnhubIndustry]){const [sec,ix]=FH[p.finnhubIndustry];s.sec=sec;s.ind=SECTORS[sec].ind[ix]}
-      }
-      if(i%5===0){save();render()}
+          if(q&&q.c){Object.assign(s,{c:q.c,o:q.o,h:q.h,l:q.l,pc:q.pc,dp:q.dp,symOk:sym,cur:"USD",src:"ETF (Finnhub)",qt:(q.t||0)*1000||Date.now()});got=true;break}}
+        if(got)ok++;else{fail.push(s.t);s.symOk=null}}
+      else{const q=await api(`quote?symbol=${encodeURIComponent(s.t)}`);
+        if(q&&q.c){Object.assign(s,{c:q.c,o:q.o,h:q.h,l:q.l,pc:q.pc,dp:q.dp,dayDp:null,cur:"USD",src:"US",qt:(q.t||0)*1000||Date.now()});if(!LOCAL[s.t])s.usd=q.c;ok++}else fail.push(s.t)}
     }catch(e){if(e.message==="auth"){auth=true;break}fail.push(s.t);if(e instanceof TypeError){blocked=true;break}}
+    prog(1);if(done%5===0){save();render()}
+  }
+  if(!auth&&!blocked)for(const s of needProf){
+    try{const p=await api(`stock/profile2?symbol=${encodeURIComponent(s.t)}`);
+      if(p&&p.marketCapitalization){s.cap=Math.round(p.marketCapitalization/10)/100;s.capFetched=true}
+      if(p&&p.name&&!s.n)s.n=p.name;
+      if(p&&s.sec==="OTH"&&FH[p.finnhubIndustry]){const [sec,ix]=FH[p.finnhubIndustry];s.sec=sec;s.ind=SECTORS[sec].ind[ix]}
+    }catch(e){if(e.message==="auth"){auth=true;break}if(e instanceof TypeError){blocked=true;break}}
+    prog(1);if(done%5===0){save();render()}
   }
   busy=false;$("refresh").classList.remove("spin");
-  if(ok){lastUpdate=Date.now();store.set("updated",lastUpdate)}
+  if(ok){lastUpdate=Date.now();lastSrc=MODE_N[mode];store.set("updated",lastUpdate);store.set("lastSrc",lastSrc)}
   save();render();if($("editor").classList.contains("open"))renderList();
-  if(auth)flash("API-Key ungültig – bitte unter ✎ prüfen.");
+  if(auth)flash("Finnhub-Key ungültig – bitte unter ✎ prüfen.");
+  else if(netErr)flash("Worker nicht erreichbar – Adresse unter ✎ prüfen.");
   else if(blocked)flash("Externer Abruf blockiert (z. B. in der Claude-App). Seite über GitHub Pages öffnen.");
-  else if(fail.length)flash(`${ok} aktualisiert · ohne Daten: ${fail.slice(0,6).join(", ")}${fail.length>6?" …":""}`);
+  else if(fail.length)flash(`${ok} aktualisiert · ohne Daten: ${[...new Set(fail)].slice(0,6).join(", ")}${fail.length>6?" …":""}`);
+  if(pendingFetch){pendingFetch=false;setTimeout(()=>fetchLive(),50)}
+}
+async function testWorker(){
+  const u=$("workerUrl").value.trim();workerUrl=u;store.set("worker",u);const info=$("workerInfo");
+  if(!u){info.textContent="Kein Worker eingetragen – es wird nur Finnhub genutzt.";return}
+  info.textContent="Teste …";
+  try{const j=await(await fetch(`${u.replace(/\/+$/,"")}/?tg=US0378331005&yh=AAPL,GC%3DF`)).json();
+    const t=j.tg?.US0378331005,y=j.yh?.AAPL,g=j.yh?.["GC=F"];
+    info.innerHTML=`Worker erreichbar ✓<br>Tradegate (Apple): ${t&&!t.err?fmtNum(t.last)+" € ("+fmtPct(t.dp)+")":"<span style='color:#ffcf66'>keine Daten</span>"}<br>Yahoo (Apple): ${y&&!y.err?fmtNum(y.price)+" $ · "+y.state:"<span style='color:#ffcf66'>keine Daten</span>"}<br>Yahoo (Gold-Future): ${g&&!g.err?fmtNum(g.price)+" $":"<span style='color:#ffcf66'>keine Daten</span>"}`;
+    setAuto();fetchLive();
+  }catch(e){info.innerHTML="<span style='color:#ff8a8f'>Worker nicht erreichbar. Adresse prüfen (muss mit https:// beginnen) und ob ALLOWED_ORIGIN im Worker zu deiner Seite passt.</span>"}
 }
 let flashT;function flash(m,ms=6000){clearTimeout(flashT);const st=$("status");st.textContent=m;st.style.color="#ffcf66";flashT=setTimeout(()=>{st.style.color="";status()},ms)}
-let autoT;function setAuto(){clearInterval(autoT);if(+settings.auto&&apiKey)autoT=setInterval(()=>{if(!document.hidden)fetchLive()},settings.auto*1000)}
+let autoT;function setAuto(){clearInterval(autoT);if(+settings.auto&&(apiKey||workerUrl))autoT=setInterval(()=>{if(!document.hidden)fetchLive()},settings.auto*1000)}
 
 /* ===== Bindings ===== */
 document.querySelectorAll(".seg").forEach(seg=>{const k=seg.dataset.k;
   const sync=()=>seg.querySelectorAll("button").forEach(b=>b.classList.toggle("on",b.dataset.v===String(settings[k])));
-  seg.querySelectorAll("button").forEach(b=>b.onclick=()=>{settings[k]=b.dataset.v;store.set("settings",settings);sync();render()});sync()});
+  seg.querySelectorAll("button").forEach(b=>b.onclick=()=>{settings[k]=b.dataset.v;store.set("settings",settings);sync();render();if(k==="src"&&(apiKey||workerUrl))fetchLive()});sync()});
 $("edit").onclick=openEditor;
 $("q").oninput=renderList;
 $("boost").checked=settings.boost==="1";$("boost").onchange=()=>{settings.boost=$("boost").checked?"1":"0";store.set("settings",settings);render()};
@@ -512,17 +598,17 @@ let ndxArmed=false;$("ndxDel").onclick=()=>{if(!ndxArmed){ndxArmed=true;$("ndxDe
   path=[];save();renderList();render();ndxArmed=false;$("ndxDel").textContent="Indexwerte entfernen"};
 $("refresh").onclick=()=>fetchLive();
 $("addBtn").onclick=addStock;$("newT").onkeydown=e=>{if(e.key==="Enter")addStock()};
-$("apiKey").value=apiKey;$("auto").value=settings.auto;
+$("apiKey").value=apiKey;$("workerUrl").value=workerUrl;$("saveWorker").onclick=testWorker;$("auto").value=settings.auto;
 $("auto").onchange=()=>{settings.auto=$("auto").value;store.set("settings",settings);setAuto()};
 $("saveKey").onclick=()=>{apiKey=$("apiKey").value.trim();store.set("key",apiKey);setAuto();fetchLive()};
 $("copyBtn").onclick=async()=>{try{await navigator.clipboard.writeText($("io").value);$("copyBtn").textContent="Kopiert ✓"}catch(e){$("io").select();$("copyBtn").textContent="Markiert"}setTimeout(()=>$("copyBtn").textContent="Kopieren",2000)};
 $("importBtn").onclick=()=>{try{const d=JSON.parse($("io").value);if(!Array.isArray(d))throw 0;
   stocks=d.filter(o=>o&&o.t).map(o=>{let t=String(o.t).toUpperCase();t=ALIAS[t]||t;const c=classify(t);
-    return {t,n:o.n||c?.n||"",sec:SECTORS[o.sec]?o.sec:(c?.sec||OLD[o.s]||"OTH"),ind:o.ind??c?.ind??"",cap:o.cap!=null?+o.cap:null,dp:o.dp!=null?+o.dp:0,manual:!!(o.manual??c?.manual),asset:!!(o.asset||c?.asset),idx:!!o.idx}});
+    return {t,n:o.n||c?.n||"",sec:SECTORS[o.sec]?o.sec:(c?.sec||OLD[o.s]||"OTH"),ind:o.ind??c?.ind??"",cap:o.cap!=null?+o.cap:null,dp:o.dp!=null?+o.dp:0,manual:!!(o.manual??c?.manual),asset:!!(o.asset||c?.asset),idx:!!o.idx,isin:o.isin||c?.isin||"",nous:!!c?.nous}});
   save();renderList();render()}catch(e){$("importBtn").textContent="Ungültig";setTimeout(()=>$("importBtn").textContent="Importieren",2000)}};
 let armed=false;$("resetBtn").onclick=()=>{if(!armed){armed=true;$("resetBtn").textContent="Ersetzt deine Liste – nochmal tippen";setTimeout(()=>{armed=false;$("resetBtn").textContent="Beispiel laden"},3000);return}
   stocks=DEMO.map(o=>({...o}));lastUpdate=null;store.set("updated",null);path=[];save();renderList();render();armed=false;$("resetBtn").textContent="Beispiel laden"};
-document.addEventListener("visibilitychange",()=>{if(!document.hidden&&+settings.auto&&apiKey)fetchLive()});
+document.addEventListener("visibilitychange",()=>{if(!document.hidden&&+settings.auto&&(apiKey||workerUrl))fetchLive()});
 let rT;new ResizeObserver(()=>{clearTimeout(rT);rT=setTimeout(render,60)}).observe($("map"));
 render();setAuto();
 </script>
