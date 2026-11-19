@@ -26,6 +26,12 @@ h1 small{display:block;font-weight:400;color:var(--muted);font-size:12px;margin-
 .seg{display:flex;background:var(--panel);border:1px solid var(--line);border-radius:10px;padding:2px;flex:none}
 .seg button{border:0;background:none;padding:6px 10px;border-radius:8px;font-size:13px;color:var(--muted);cursor:pointer;white-space:nowrap}
 .seg button.on{background:var(--panel2);color:var(--text);font-weight:600;box-shadow:0 0 0 1px #2f3845}
+/* Sektor-Leiste */
+#secbar{display:flex;gap:6px;padding:0 12px 8px;overflow-x:auto;scrollbar-width:none}
+#secbar::-webkit-scrollbar{display:none}
+#secbar button{flex:none;border:1px solid rgba(255,255,255,.08);border-radius:10px;padding:7px 11px;font-size:13px;font-weight:600;color:#fff;cursor:pointer;display:flex;gap:6px;align-items:baseline}
+#secbar button small{font-family:'JetBrains Mono',monospace;font-weight:500;font-size:11.5px;opacity:.9}
+#secbar button.on{border-color:#fff;box-shadow:0 0 0 1px #fff}
 /* Brotkrumen beim Zoom */
 #crumb{display:none;align-items:center;gap:6px;margin:0 8px 6px;padding:4px 6px 4px 4px;background:var(--panel);border:1px solid var(--line);border-radius:10px;font-size:13px;overflow-x:auto;white-space:nowrap;scrollbar-width:none}
 #crumb.show{display:flex}
@@ -41,7 +47,8 @@ h1 small{display:block;font-weight:400;color:var(--muted);font-size:12px;margin-
 .grp>.lbl .nm{overflow:hidden;text-overflow:ellipsis}
 .grp>.lbl .pc{margin-left:auto;font-family:'JetBrains Mono',monospace;flex:none}
 .grp>.lbl .ch{opacity:.6;flex:none}
-.d0>.lbl{height:18px;font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:.04em;color:#c3cad4}
+.d0>.lbl .zm{flex:none;background:rgba(255,255,255,.12);border-radius:6px;padding:1px 7px;font-size:12px;font-weight:700;letter-spacing:0;color:#fff}
+.d0>.lbl{height:24px;font-size:11.5px;font-weight:700;text-transform:uppercase;letter-spacing:.04em;color:#c3cad4}
 .d0>.lbl:active,.d1>.lbl:active{background:#222a35}
 .d1{border:1px solid var(--bg)}
 .d1>.lbl{height:14px;font-size:10px;font-weight:600;color:#aab3bf;background:#151a21}
@@ -113,10 +120,12 @@ textarea{width:100%;height:100px;background:var(--bg);border:1px solid var(--lin
   <button class="ib" id="edit" aria-label="Watchlist bearbeiten">✎</button>
 </header>
 <div class="chips">
+  <div class="seg" data-k="scope" id="scopeSeg"><button data-v="all">Alle</button><button data-v="mine">★ Meine</button></div>
   <div class="seg" data-k="group"><button data-v="ind">Sektor + Branche</button><button data-v="sector">Sektor</button><button data-v="none">Ohne</button></div>
   <div class="seg" data-k="size"><button data-v="cap">Marktkap.</button><button data-v="equal">Gleich groß</button></div>
   <div class="seg" data-k="scale"><button data-v="1">±1 %</button><button data-v="2">±2 %</button><button data-v="3">±3 %</button><button data-v="5">±5 %</button></div>
 </div>
+<div id="secbar"></div>
 <div id="crumb"></div>
 <div id="wrap"><div id="map"></div></div>
 <footer><div class="bar" id="legbar"></div><span id="status"></span></footer>
@@ -135,6 +144,14 @@ textarea{width:100%;height:100px;background:var(--bg);border:1px solid var(--lin
   <div class="body">
     <div class="row"><input class="f" id="newT" placeholder="Ticker, z. B. NVDA, AAPL, JPM" autocapitalize="characters" autocomplete="off" autocorrect="off" spellcheck="false" enterkeyhint="done"><button class="btn primary" id="addBtn">＋</button></div>
     <p class="hint">Mehrere Ticker mit Komma oder Leerzeichen trennen. Rohstoffe: GOLD, SILBER, PLATIN, KUPFER, WTI, BRENT, ERDGAS, BTC. Bekannte US-Werte werden automatisch einem GICS-Sektor und einer Branche zugeordnet; die Zuordnung kannst du jederzeit ändern.</p>
+    <h4>Index ergänzen</h4>
+    <p class="hint">Fügt alle Werte des Nasdaq 100 hinzu (Stand 02.11.2026). Deine eigenen Werte bleiben und sind mit ★ markiert; oben kannst du zwischen „Alle“ und „★ Meine“ wechseln.</p>
+    <div class="row"><button class="btn" id="ndxAdd">＋ Nasdaq 100</button><button class="btn danger" id="ndxDel">Indexwerte entfernen</button></div>
+    <h4>Ansicht</h4>
+    <label style="display:flex;gap:10px;align-items:center;font-size:14px"><input type="checkbox" id="boost" style="width:20px;height:20px"> Kleine Sektoren & Branchen vergrößern</label>
+    <p class="hint">Jeder Sektor bekommt mindestens 7 % der Fläche, jede Branche 12 % ihres Sektors, damit man sie gut antippen kann. Innerhalb der Gruppen bleiben die Größen echt.</p>
+    <h4>Werte</h4>
+    <input class="f" id="q" placeholder="Suchen (Ticker oder Name)" autocomplete="off" autocorrect="off" spellcheck="false" style="margin-bottom:8px">
     <div id="list"></div>
 
     <h4>Live-Daten (Finnhub)</h4>
@@ -179,8 +196,16 @@ GE:["GE Aerospace","IND",0],CAT:["Caterpillar","IND",1],RTX:["RTX","IND",0],HON:
 XOM:["ExxonMobil","EN",0],CVX:["Chevron","EN",0],COP:["ConocoPhillips","EN",0],EOG:["EOG Resources","EN",0],SLB:["SLB","EN",1],OXY:["Occidental","EN",0],PSX:["Phillips 66","EN",0],MPC:["Marathon Petroleum","EN",0],WMB:["Williams","EN",0],KMI:["Kinder Morgan","EN",0],BKR:["Baker Hughes","EN",1],
 NEE:["NextEra Energy","UT",0],SO:["Southern Co.","UT",0],DUK:["Duke Energy","UT",0],CEG:["Constellation Energy","UT",2],VST:["Vistra","UT",2],AEP:["American Electric Power","UT",0],SRE:["Sempra","UT",1],D:["Dominion","UT",1],
 PLD:["Prologis","RE",1],AMT:["American Tower","RE",0],EQIX:["Equinix","RE",0],WELL:["Welltower","RE",4],SPG:["Simon Property","RE",3],O:["Realty Income","RE",3],PSA:["Public Storage","RE",0],DLR:["Digital Realty","RE",0],CCI:["Crown Castle","RE",0],CBRE:["CBRE","RE",6],
-LIN:["Linde","MAT",0],SHW:["Sherwin-Williams","MAT",0],APD:["Air Products","MAT",0],ECL:["Ecolab","MAT",0],FCX:["Freeport-McMoRan","MAT",1],NEM:["Newmont","MAT",1],NUE:["Nucor","MAT",1],DOW:["Dow","MAT",0],VMC:["Vulcan Materials","MAT",2],MLM:["Martin Marietta","MAT",2]
+LIN:["Linde","MAT",0],SHW:["Sherwin-Williams","MAT",0],APD:["Air Products","MAT",0],ECL:["Ecolab","MAT",0],FCX:["Freeport-McMoRan","MAT",1],NEM:["Newmont","MAT",1],NUE:["Nucor","MAT",1],DOW:["Dow","MAT",0],VMC:["Vulcan Materials","MAT",2],MLM:["Martin Marietta","MAT",2],
+ALNY:["Alnylam","HC",1],ALAB:["Astera Labs","IT",1],AXON:["Axon","IND",0],CCEP:["Coca-Cola Europacific","CS",1],CPRT:["Copart","IND",6],CSX:["CSX","IND",4],DXCM:["Dexcom","HC",2],FANG:["Diamondback Energy","EN",0],
+EXC:["Exelon","UT",0],FAST:["Fastenal","IND",7],FER:["Ferrovial","IND",5],GEHC:["GE HealthCare","HC",2],HONA:["Honeywell Aerospace","IND",0],IDXX:["IDEXX","HC",2],MCHP:["Microchip","IT",1],MRNA:["Moderna","HC",1],
+MPWR:["Monolithic Power","IT",1],NXPI:["NXP","IT",1],ODFL:["Old Dominion","IND",4],PCAR:["Paccar","IND",1],PAYX:["Paychex","IND",6],PDD:["PDD Holdings","CD",0],RKLB:["Rocket Lab","IND",0],ROP:["Roper","IT",0],
+ROST:["Ross Stores","CD",1],SNDK:["Sandisk","IT",3],STX:["Seagate","IT",3],WDC:["Western Digital","IT",3],SHOP:["Shopify","IT",0],SPCX:["SpaceX","IND",0],TTWO:["Take-Two","COM",1],TER:["Teradyne","IT",2],
+TRI:["Thomson Reuters","IND",6],XEL:["Xcel Energy","UT",0]
 };
+/* Nasdaq 100, Stand 02.11.2026 (nasdaq.com) */
+const NDX="ADBE AMD ABNB ALNY GOOGL GOOG AMZN AEP AMGN ADI AAPL AMAT APP ARM ASML ALAB ADSK ADP AXON BKR BKNG AVGO CDNS CTAS CSCO CCEP CMCSA CEG CPRT CRWV COST CRWD CSX DDOG DXCM FANG DASH EXC FAST FER FTNT GEHC GILD HONA HON IDXX INTC INTU ISRG KDP KLAC LRCX LIN LITE MAR MRVL MELI META MCHP MU MSFT MRNA MDLZ MPWR MNST NBIS NFLX NVDA NXPI ORLY ODFL PCAR PLTR PANW PAYX PYPL PDD PEP QCOM REGN RKLB ROP ROST SNDK STX SHOP SPCX SBUX MSTR SNPS TMUS TTWO TER TSLA TXN TRI VRTX WMT WDC WDAY XEL".split(" ");
+const SHORT={IT:"Tech",COM:"Kommunikation",CD:"Zykl. Konsum",CS:"Basiskonsum",HC:"Gesundheit",FIN:"Finanzen",IND:"Industrie",EN:"Energie",UT:"Versorger",RE:"Immobilien",MAT:"Grundstoffe",CMD:"Rohstoffe",OTH:"Sonstige"};
 /* Finnhub-Branchen → GICS (Fallback für unbekannte Ticker) */
 const FH={"Technology":["IT",0],"Semiconductors":["IT",1],"Software":["IT",0],"Communications":["IT",4],"Electrical Equipment":["IND",2],"Media":["COM",2],"Telecommunication":["COM",3],"Entertainment":["COM",1],
 "Retail":["CD",1],"Automobiles":["CD",2],"Auto Components":["CD",2],"Hotels, Restaurants & Leisure":["CD",3],"Textiles, Apparel & Luxury Goods":["CD",4],"Leisure Products":["CD",5],"Diversified Consumer Services":["CD",6],"Consumer products":["CS",3],
@@ -202,7 +227,7 @@ const DEMO=[["AAPL",3500,.8],["MSFT",3300,-.6],["NVDA",4200,2.4],["AVGO",1300,1.
 /* ===== Zustand ===== */
 const store={get(k,d){try{const v=localStorage.getItem("hm_"+k);return v?JSON.parse(v):d}catch(e){return d}},set(k,v){try{localStorage.setItem("hm_"+k,JSON.stringify(v))}catch(e){}}};
 let stocks=store.get("stocks",null)||DEMO.map(o=>({...o}));
-let settings=Object.assign({size:"cap",group:"ind",scale:"3",auto:"0"},store.get("settings",{}));
+let settings=Object.assign({size:"cap",group:"ind",scale:"3",auto:"0",scope:"all",boost:"1"},store.get("settings",{}));
 if(settings.group==="sector"&&!store.get("v2",false))settings.group="ind";
 let apiKey=store.get("key",""),lastUpdate=store.get("updated",null);
 let path=[]; // Zoom-Pfad: [] | [Sektor] | [Sektor, Branche]
@@ -248,15 +273,16 @@ function squarify(items,x,y,w,h){
 /* ===== Rendern ===== */
 let selected=null;
 function allLevels(){return settings.group==="ind"?["sec","ind"]:settings.group==="sector"?["sec"]:[]}
+function scoped(){return settings.scope==="mine"?stocks.filter(s=>!s.idx):stocks}
 function visible(){
   const lv=allLevels();path=path.slice(0,lv.length);
-  return stocks.filter(s=>s.t&&weight(s)>0&&path.every((k,i)=>keyOf(s,lv[i])===k));
+  return scoped().filter(s=>s.t&&weight(s)>0&&path.every((k,i)=>keyOf(s,lv[i])===k));
 }
 function render(){
   calcMed();const map=$("map");map.innerHTML="";const W=map.clientWidth,H=map.clientHeight;
   let vis=visible();
   while(!vis.length&&path.length){path.pop();vis=visible()}
-  crumb();
+  crumb();secbar();
   if(!vis.length){
     const noCap=stocks.filter(s=>s.t&&!(+s.cap>0)).length;
     map.innerHTML=`<div class="empty">${stocks.length?`${noCap} Aktie(n) ohne Marktkapitalisierung.<br>Trag sie unter ✎ ein, lade Live-Daten oder wähle „Gleich groß“.`:`Deine Watchlist ist leer.<br>Füge Ticker hinzu, z. B. NVDA, AAPL, JPM.`}<button class="btn primary" onclick="openEditor()">Watchlist öffnen</button></div>`;
@@ -267,14 +293,17 @@ function render(){
 function renderLevel(parent,items,levels,x,y,w,h,depth){
   if(!levels.length){squarify(items.map(s=>({s,v:weight(s)})),x,y,w,h).forEach(r=>parent.appendChild(tile(r)));return}
   const lv=levels[0],g={};items.forEach(s=>{const k=keyOf(s,lv);(g[k]=g[k]||[]).push(s)});
-  const rects=squarify(Object.entries(g).map(([k,arr])=>({k,arr,v:arr.reduce((t,s)=>t+weight(s),0)})),x,y,w,h);
+  let grs=Object.entries(g).map(([k,arr])=>({k,arr,v:arr.reduce((t,s)=>t+weight(s),0)}));
+  if(settings.boost==="1"&&settings.size==="cap"&&grs.length>1){const tot=grs.reduce((t,o)=>t+o.v,0),fl=(depth===0?.07:.12)*tot;grs.forEach(o=>o.v=Math.max(o.v,fl))}
+  const rects=squarify(grs,x,y,w,h);
   for(const r of rects){
     const el=document.createElement("div");el.className="grp d"+Math.min(depth,1);
     Object.assign(el.style,{left:r.x+"px",top:r.y+"px",width:r.w+"px",height:r.h+"px"});
-    const hh=depth===0?18:14,head=(r.h>hh*2.4&&r.w>46)?hh:0;
+    const hh=depth===0?24:14,head=depth===0?((r.h>40&&r.w>36)?hh:0):((r.h>hh*2.4&&r.w>46)?hh:0);
     if(head){
       const l=document.createElement("div");l.className="lbl";const a=avg(r.arr);
-      l.innerHTML=`<span class="nm">${esc(nameOf(r.k,lv))}</span>${r.w>120?`<span class="pc" style="color:${pcCol(a)}">${fmtPct(a)}</span>`:""}<span class="ch">›</span>`;
+      const nm=lv==="sec"&&r.w<150?(SHORT[r.k]||r.k):nameOf(r.k,lv);
+      l.innerHTML=`<span class="nm">${esc(nm)}</span>${r.w>(depth?120:170)?`<span class="pc" style="color:${pcCol(a)}">${fmtPct(a)}</span>`:""}${depth===0?`<span class="zm">⤢</span>`:`<span class="ch">›</span>`}`;
       l.onclick=e=>{e.stopPropagation();path.push(r.k);selected=null;render()};
       el.appendChild(l);
     }
@@ -287,7 +316,7 @@ function tile(r){
   Object.assign(el.style,{left:r.x+"px",top:r.y+"px",width:r.w+"px",height:r.h+"px",background:color(s.dp)});
   if(Math.min(r.w,r.h)>=16){
     const fs=Math.max(9,Math.min(32,r.w/(s.t.length*.72+.8),r.h/3));
-    let h=`<div class="t" style="font-size:${fs}px">${esc(s.t)}</div>`;
+    let h=`<div class="t" style="font-size:${fs}px">${esc(s.t)}${!s.idx&&settings.scope==="all"&&stocks.some(o=>o.idx)&&r.w>fs*3?`<span style="font-size:${Math.max(8,fs*.45)}px;color:#ffd166;vertical-align:super"> ★</span>`:""}</div>`;
     if(r.h>fs*2.1&&r.w>34)h+=`<div class="p" style="font-size:${Math.max(9,fs*.56)}px">${fmtPct(s.dp)}</div>`;
     if(r.h>fs*3.4&&r.w>80&&s.n)h+=`<div class="n">${esc(s.n)}</div>`;
     if(r.h>fs*4.2&&r.w>90&&s.h>s.l){const p=v=>Math.max(0,Math.min(100,(v-s.l)/(s.h-s.l)*100));h+=`<div class="range"><b style="left:${p(s.o)}%"></b><i style="left:${p(s.c)}%"></i></div>`}
@@ -296,6 +325,15 @@ function tile(r){
   if(canHover){el.onmousemove=e=>showTip(s,e.clientX,e.clientY);el.onmouseleave=()=>$("tip").style.display="none"}
   el.onclick=()=>{$("tip").style.display="none";openDetail(s)};
   return el;
+}
+function secbar(){
+  const b=$("secbar");const hasIdx=stocks.some(s=>s.idx);$("scopeSeg").style.display=hasIdx?"":"none";
+  if(settings.group==="none"){b.style.display="none";return}b.style.display="";
+  const g={};scoped().filter(s=>s.t&&weight(s)>0).forEach(s=>{const k=secOf(s);(g[k]=g[k]||[]).push(s)});
+  const arr=Object.entries(g).map(([k,a])=>({k,a,v:a.reduce((t,s)=>t+weight(s),0)})).sort((x,y)=>y.v-x.v);
+  b.innerHTML=(path.length?`<button data-k="" style="background:var(--panel2)">‹ Alle</button>`:"")+arr.map(o=>{const d=avg(o.a);return `<button data-k="${o.k}" class="${path[0]===o.k?"on":""}" style="background:${color(d)}">${esc(SHORT[o.k]||o.k)}<small>${fmtPct(d)}</small></button>`}).join("");
+  b.querySelectorAll("button").forEach(x=>x.onclick=()=>{const k=x.dataset.k;path=(!k||path[0]===k)?[]:[k];selected=null;render();
+    const on=b.querySelector(".on");on&&on.scrollIntoView({inline:"center",block:"nearest",behavior:"smooth"})});
 }
 function crumb(){
   const c=$("crumb");if(!path.length){c.classList.remove("show");c.innerHTML="";return}
@@ -317,10 +355,10 @@ function showTip(s,x,y){
 }
 function legend(){const r=+settings.scale;$("legbar").innerHTML=[-1,-.5,0,.5,1].map(t=>`<span style="background:${color(t*r)}">${(t>0?"+":"")+String(+(t*r).toFixed(1)).replace(".",",")}</span>`).join("")}
 function status(){
-  const w=avg(stocks.filter(s=>s.t&&!s.asset));
-  $("status").innerHTML=`Watchlist <b style="color:${pcCol(w)}">${fmtPct(w)}</b> · ${lastUpdate?"Live "+new Date(lastUpdate).toLocaleTimeString("de-DE",{hour:"2-digit",minute:"2-digit"}):"manuelle Werte"}`;
+  const w=avg(scoped().filter(s=>s.t&&!s.asset));
+  $("status").innerHTML=`${settings.scope==="mine"?"Meine":"Alle"} <b style="color:${pcCol(w)}">${fmtPct(w)}</b> · ${lastUpdate?"Live "+new Date(lastUpdate).toLocaleTimeString("de-DE",{hour:"2-digit",minute:"2-digit"}):"manuelle Werte"}`;
   const secs=new Set(stocks.map(secOf)).size;
-  const na=stocks.filter(s=>s.asset).length;$("sub").textContent=`${stocks.length-na} Aktien${na?` · ${na} Rohstoffe`:""} · ${secs} Sektoren · Größe = ${settings.size==="cap"?"Marktkap.":"gleich"}`;
+  const na=stocks.filter(s=>s.asset).length;$("sub").textContent=`${stocks.length-na} Aktien${na?` · ${na} Rohstoffe`:""} · ${secs} Sektoren`;
 }
 
 /* ===== Sheets ===== */
@@ -378,11 +416,12 @@ function renderList(){
   const order=Object.keys(SECTORS);
   const sorted=[...stocks].sort((a,b)=>order.indexOf(secOf(a))-order.indexOf(secOf(b))||(+b.cap||0)-(+a.cap||0));
   let last=null;
-  sorted.forEach(s=>{
+  const q=($("q").value||"").trim().toUpperCase();
+  sorted.filter(s=>!q||s.t.includes(q)||(s.n||"").toUpperCase().includes(q)).forEach(s=>{
     const sk=secOf(s);
     if(sk!==last){last=sk;const n=stocks.filter(o=>secOf(o)===sk).length;const h=document.createElement("div");h.className="sgh";h.innerHTML=`<span>${esc(SECTORS[sk].n)}</span><span>${n}</span>`;L.appendChild(h)}
     const c=document.createElement("div");c.className="card";
-    c.innerHTML=`<div class="top"><span class="sw" style="background:${color(s.dp)}"></span><b>${esc(s.t)}</b><span class="nm">${esc(s.n||"")}${s.manual?' · <span style="color:#ffcf66">manuell</span>':""}</span><button class="x" aria-label="Entfernen">✕</button></div>
+    c.innerHTML=`<div class="top"><span class="sw" style="background:${color(s.dp)}"></span><b>${esc(s.t)}${s.idx?"":' <span style="color:#ffd166">★</span>'}</b><span class="nm">${esc(s.n||"")}${s.idx?' · <span style="color:var(--muted)">NDX</span>':""}${s.manual?' · <span style="color:#ffcf66">manuell</span>':""}</span><button class="x" aria-label="Entfernen">✕</button></div>
       <div class="g2"><div><span class="lab">Sektor</span><select class="f" data-r="sec">${secOptions(sk)}</select></div>
       <div><span class="lab">Branche</span><select class="f" data-r="ind">${indOptions(sk,s.ind)}</select></div>
       <div><span class="lab">${s.asset?"Kachelgröße (leer = auto)":"Marktkap. (Mrd.)"}</span><input class="f" data-k="cap" type="number" inputmode="decimal" value="${s.cap??""}"></div>
@@ -397,13 +436,13 @@ function renderList(){
     c.querySelector(".x").onclick=()=>{stocks.splice(stocks.indexOf(s),1);save();renderList();render()};
     L.appendChild(c);
   });
-  $("io").value=JSON.stringify(stocks.map(({t,n,sec,ind,cap,dp,manual,asset})=>({t,n,sec,ind,cap,dp,manual,asset})));
+  $("io").value=JSON.stringify(stocks.map(({t,n,sec,ind,cap,dp,manual,asset,idx})=>({t,n,sec,ind,cap,dp,manual,asset,idx})));
 }
 function save(){store.set("stocks",stocks)}
 function addStock(){
   const ts=$("newT").value.toUpperCase().split(/[\s,;]+/).map(t=>t.trim()).filter(Boolean);$("newT").value="";
   const added=[];
-  for(let t of ts){t=ALIAS[t]||t;if(stocks.some(s=>s.t===t))continue;const c=classify(t)||{n:"",sec:"OTH",ind:""};const s={t,...c,cap:null,dp:0};stocks.push(s);added.push(s)}
+  for(let t of ts){t=ALIAS[t]||t;const ex=stocks.find(s=>s.t===t);if(ex){if(ex.idx){ex.idx=false;save();render()}continue}const c=classify(t)||{n:"",sec:"OTH",ind:""};const s={t,...c,cap:null,dp:0};stocks.push(s);added.push(s)}
   if(!added.length)return;save();renderList();render();
   if(apiKey)fetchLive(added);
   else{const unknown=added.filter(s=>s.sec==="OTH").map(s=>s.t);flash(unknown.length?`${unknown.join(", ")}: bitte Sektor zuordnen. Marktkap. eintragen oder Live-Daten nutzen.`:"Hinzugefügt – Marktkap. eintragen oder Live-Daten laden.")}
@@ -461,6 +500,16 @@ document.querySelectorAll(".seg").forEach(seg=>{const k=seg.dataset.k;
   const sync=()=>seg.querySelectorAll("button").forEach(b=>b.classList.toggle("on",b.dataset.v===String(settings[k])));
   seg.querySelectorAll("button").forEach(b=>b.onclick=()=>{settings[k]=b.dataset.v;store.set("settings",settings);sync();render()});sync()});
 $("edit").onclick=openEditor;
+$("q").oninput=renderList;
+$("boost").checked=settings.boost==="1";$("boost").onchange=()=>{settings.boost=$("boost").checked?"1":"0";store.set("settings",settings);render()};
+$("ndxAdd").onclick=()=>{const added=[];for(const t of NDX){if(stocks.some(s=>s.t===t))continue;const c=classify(t)||{n:"",sec:"OTH",ind:""};const s={t,...c,cap:null,dp:0,idx:true};stocks.push(s);added.push(s)}
+  save();renderList();render();
+  if(!added.length){flash("Alle Nasdaq-100-Werte sind schon drin.");return}
+  if(apiKey){flash(`${added.length} Werte hinzugefügt – lade Daten (ca. ${Math.ceil(added.length*2/55)} Min.) …`);fetchLive(added)}
+  else flash(`${added.length} Werte hinzugefügt. Für Größe und Kurse Live-Daten laden.`)};
+let ndxArmed=false;$("ndxDel").onclick=()=>{if(!ndxArmed){ndxArmed=true;$("ndxDel").textContent="Sicher? Nochmal tippen";setTimeout(()=>{ndxArmed=false;$("ndxDel").textContent="Indexwerte entfernen"},3000);return}
+  stocks=stocks.filter(s=>!s.idx);settings.scope="all";store.set("settings",settings);document.querySelectorAll('.seg[data-k=scope] button').forEach(b=>b.classList.toggle("on",b.dataset.v==="all"));
+  path=[];save();renderList();render();ndxArmed=false;$("ndxDel").textContent="Indexwerte entfernen"};
 $("refresh").onclick=()=>fetchLive();
 $("addBtn").onclick=addStock;$("newT").onkeydown=e=>{if(e.key==="Enter")addStock()};
 $("apiKey").value=apiKey;$("auto").value=settings.auto;
@@ -469,7 +518,7 @@ $("saveKey").onclick=()=>{apiKey=$("apiKey").value.trim();store.set("key",apiKey
 $("copyBtn").onclick=async()=>{try{await navigator.clipboard.writeText($("io").value);$("copyBtn").textContent="Kopiert ✓"}catch(e){$("io").select();$("copyBtn").textContent="Markiert"}setTimeout(()=>$("copyBtn").textContent="Kopieren",2000)};
 $("importBtn").onclick=()=>{try{const d=JSON.parse($("io").value);if(!Array.isArray(d))throw 0;
   stocks=d.filter(o=>o&&o.t).map(o=>{let t=String(o.t).toUpperCase();t=ALIAS[t]||t;const c=classify(t);
-    return {t,n:o.n||c?.n||"",sec:SECTORS[o.sec]?o.sec:(c?.sec||OLD[o.s]||"OTH"),ind:o.ind??c?.ind??"",cap:o.cap!=null?+o.cap:null,dp:o.dp!=null?+o.dp:0,manual:!!(o.manual??c?.manual),asset:!!(o.asset||c?.asset)}});
+    return {t,n:o.n||c?.n||"",sec:SECTORS[o.sec]?o.sec:(c?.sec||OLD[o.s]||"OTH"),ind:o.ind??c?.ind??"",cap:o.cap!=null?+o.cap:null,dp:o.dp!=null?+o.dp:0,manual:!!(o.manual??c?.manual),asset:!!(o.asset||c?.asset),idx:!!o.idx}});
   save();renderList();render()}catch(e){$("importBtn").textContent="Ungültig";setTimeout(()=>$("importBtn").textContent="Importieren",2000)}};
 let armed=false;$("resetBtn").onclick=()=>{if(!armed){armed=true;$("resetBtn").textContent="Ersetzt deine Liste – nochmal tippen";setTimeout(()=>{armed=false;$("resetBtn").textContent="Beispiel laden"},3000);return}
   stocks=DEMO.map(o=>({...o}));lastUpdate=null;store.set("updated",null);path=[];save();renderList();render();armed=false;$("resetBtn").textContent="Beispiel laden"};
