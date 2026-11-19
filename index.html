@@ -26,6 +26,11 @@ h1 small{display:block;font-weight:400;color:var(--muted);font-size:12px;margin-
 .seg{display:flex;background:var(--panel);border:1px solid var(--line);border-radius:10px;padding:2px;flex:none}
 .seg button{border:0;background:none;padding:6px 10px;border-radius:8px;font-size:13px;color:var(--muted);cursor:pointer;white-space:nowrap}
 .seg button.on{background:var(--panel2);color:var(--text);font-weight:600;box-shadow:0 0 0 1px #2f3845}
+/* Haupt-Tabs */
+.tabs{display:grid;grid-template-columns:1fr 1.25fr 1fr;gap:3px;margin:2px 12px 8px;padding:3px;background:var(--panel);border:1px solid var(--line);border-radius:13px}
+.tabs button{border:0;background:none;border-radius:10px;padding:8px 4px;font-size:13.5px;font-weight:600;color:var(--muted);cursor:pointer;white-space:nowrap;display:flex;gap:5px;justify-content:center;align-items:baseline}
+.tabs button small{font-size:11px;font-weight:500;opacity:.7;font-variant-numeric:tabular-nums}
+.tabs button.on{background:var(--panel2);color:var(--text);box-shadow:0 0 0 1px #3a4452,0 2px 8px rgba(0,0,0,.25)}
 /* Sektor-Leiste */
 #secbar{display:flex;gap:6px;padding:0 12px 8px;overflow-x:auto;scrollbar-width:none}
 #secbar::-webkit-scrollbar{display:none}
@@ -130,8 +135,8 @@ textarea{width:100%;height:100px;background:var(--bg);border:1px solid var(--lin
   <button class="ib" id="refresh" aria-label="Live-Kurse laden"><span>↻</span></button>
   <button class="ib" id="edit" aria-label="Watchlist bearbeiten">✎</button>
 </header>
+<div class="tabs" id="tabs"><button data-v="main">Alle<small></small></button><button data-v="more">Rohstoffe &amp; Co.<small></small></button><button data-v="mine">★ Meine<small></small></button></div>
 <div class="chips">
-  <div class="seg" data-k="scope" id="scopeSeg"><button data-v="all">Alle</button><button data-v="mine">★ Meine</button></div>
   <div class="seg" data-k="src"><button data-v="auto">Auto</button><button data-v="tg">Tradegate</button><button data-v="us">US</button><button data-v="ext">US+</button></div>
   <div class="seg" data-k="group"><button data-v="ind">Sektor + Branche</button><button data-v="sector">Sektor</button><button data-v="none">Ohne</button></div>
   <div class="seg" data-k="size"><button data-v="bal">Ausgewogen</button><button data-v="cap">Marktkap. echt</button><button data-v="equal">Gleich</button></div>
@@ -157,7 +162,7 @@ textarea{width:100%;height:100px;background:var(--bg);border:1px solid var(--lin
     <div class="row"><input class="f" id="newT" placeholder="Ticker, z. B. NVDA, AAPL, JPM" autocapitalize="characters" autocomplete="off" autocorrect="off" spellcheck="false" enterkeyhint="done"><button class="btn primary" id="addBtn">＋</button></div>
     <p class="hint">Mehrere Ticker mit Komma oder Leerzeichen trennen. Rohstoffe: GOLD, SILBER, PLATIN, KUPFER, WTI, BRENT, ERDGAS, BTC. Bekannte US-Werte werden automatisch einem GICS-Sektor und einer Branche zugeordnet; die Zuordnung kannst du jederzeit ändern.</p>
     <h4>Index ergänzen</h4>
-    <p class="hint">Fügt alle Werte des Nasdaq 100 hinzu (Stand 02.11.2026). Deine eigenen Werte bleiben und sind mit ★ markiert; oben kannst du zwischen „Alle“ und „★ Meine“ wechseln.</p>
+    <p class="hint">Fügt alle Werte des Nasdaq 100 hinzu (Stand 02.11.2026). Deine eigenen Werte bleiben und sind mit ★ markiert; oben wechselst du zwischen „Alle“, „Rohstoffe & Co.“ (Konsum, Energie, Finanzen, Rohstoffe & Bitcoin) und „★ Meine“.</p>
     <div class="row"><button class="btn" id="ndxAdd">＋ Nasdaq 100</button><button class="btn danger" id="ndxDel">Indexwerte entfernen</button></div>
     <h4>Ansicht</h4>
     <label style="display:flex;gap:10px;align-items:center;font-size:14px"><input type="checkbox" id="boost" style="width:20px;height:20px"> Kleine Sektoren & Branchen vergrößern</label>
@@ -205,7 +210,7 @@ const SECTORS={
 const KNOWN={
 AAPL:["Apple","IT",3],MSFT:["Microsoft","IT",0],NVDA:["Nvidia","IT",1],AVGO:["Broadcom","IT",1],ORCL:["Oracle","IT",0],CRM:["Salesforce","IT",0],ADBE:["Adobe","IT",0],AMD:["AMD","IT",1],CSCO:["Cisco","IT",4],ACN:["Accenture","IT",6],IBM:["IBM","IT",6],INTU:["Intuit","IT",0],NOW:["ServiceNow","IT",0],QCOM:["Qualcomm","IT",1],TXN:["Texas Instruments","IT",1],AMAT:["Applied Materials","IT",2],LRCX:["Lam Research","IT",2],KLAC:["KLA","IT",2],MU:["Micron","IT",1],INTC:["Intel","IT",1],ADI:["Analog Devices","IT",1],PANW:["Palo Alto Networks","IT",7],CRWD:["CrowdStrike","IT",7],PLTR:["Palantir","IT",0],ANET:["Arista Networks","IT",4],SNPS:["Synopsys","IT",0],CDNS:["Cadence","IT",0],APH:["Amphenol","IT",5],DELL:["Dell","IT",3],SMCI:["Super Micro","IT",3],MRVL:["Marvell","IT",1],ASML:["ASML","IT",2],TSM:["TSMC","IT",1],FTNT:["Fortinet","IT",7],ADSK:["Autodesk","IT",0],WDAY:["Workday","IT",0],APP:["AppLovin","IT",0],SNOW:["Snowflake","IT",0],MSTR:["Strategy","IT",0],ARM:["Arm","IT",1],NBIS:["Nebius","IT",6],CRWV:["CoreWeave","IT",6],DDOG:["Datadog","IT",0],LITE:["Lumentum","IT",4],ZS:["Zscaler","IT",7],NET:["Cloudflare","IT",6],IFNNY:["Infineon (ADR)","IT",1],TOELY:["Tokyo Electron (ADR)","IT",2],
 GOOGL:["Alphabet A","COM",0],GOOG:["Alphabet C","COM",0],META:["Meta","COM",0],NFLX:["Netflix","COM",1],DIS:["Disney","COM",1],TMUS:["T-Mobile US","COM",3],VZ:["Verizon","COM",3],T:["AT&T","COM",3],CMCSA:["Comcast","COM",2],SPOT:["Spotify","COM",1],RDDT:["Reddit","COM",0],
-AMZN:["Amazon","CD",0],TSLA:["Tesla","CD",2],HD:["Home Depot","CD",1],MCD:["McDonald's","CD",3],LOW:["Lowe's","CD",1],BKNG:["Booking","CD",3],TJX:["TJX","CD",1],SBUX:["Starbucks","CD",3],NKE:["Nike","CD",4],ABNB:["Airbnb","CD",3],CMG:["Chipotle","CD",3],ORLY:["O'Reilly","CD",1],AZO:["AutoZone","CD",1],GM:["General Motors","CD",2],F:["Ford","CD",2],MELI:["MercadoLibre","CD",0],RCL:["Royal Caribbean","CD",3],MAR:["Marriott","CD",3],LULU:["Lululemon","CD",4],DASH:["DoorDash","CD",3],
+AMZN:["Amazon","COM",0,0,"Breitband-Einzelhandel"],TSLA:["Tesla","COM",0,0,"Automobile"],HD:["Home Depot","CD",1],MCD:["McDonald's","CD",3],LOW:["Lowe's","CD",1],BKNG:["Booking","CD",3],TJX:["TJX","CD",1],SBUX:["Starbucks","CD",3],NKE:["Nike","CD",4],ABNB:["Airbnb","CD",3],CMG:["Chipotle","CD",3],ORLY:["O'Reilly","CD",1],AZO:["AutoZone","CD",1],GM:["General Motors","CD",2],F:["Ford","CD",2],MELI:["MercadoLibre","CD",0],RCL:["Royal Caribbean","CD",3],MAR:["Marriott","CD",3],LULU:["Lululemon","CD",4],DASH:["DoorDash","CD",3],
 WMT:["Walmart","CS",0],COST:["Costco","CS",0],PG:["Procter & Gamble","CS",3],KO:["Coca-Cola","CS",1],PEP:["PepsiCo","CS",1],PM:["Philip Morris","CS",5],MO:["Altria","CS",5],MDLZ:["Mondelez","CS",2],CL:["Colgate-Palmolive","CS",3],KDP:["Keurig Dr Pepper","CS",1],MNST:["Monster Beverage","CS",1],KR:["Kroger","CS",0],TGT:["Target","CS",0],EL:["Estée Lauder","CS",4],
 LLY:["Eli Lilly","HC",0],JNJ:["Johnson & Johnson","HC",0],UNH:["UnitedHealth","HC",3],ABBV:["AbbVie","HC",1],MRK:["Merck & Co.","HC",0],PFE:["Pfizer","HC",0],TMO:["Thermo Fisher","HC",4],ABT:["Abbott","HC",2],ISRG:["Intuitive Surgical","HC",2],AMGN:["Amgen","HC",1],DHR:["Danaher","HC",4],GILD:["Gilead","HC",1],VRTX:["Vertex","HC",1],BSX:["Boston Scientific","HC",2],SYK:["Stryker","HC",2],BMY:["Bristol-Myers","HC",0],CVS:["CVS Health","HC",3],ELV:["Elevance","HC",3],NVO:["Novo Nordisk","HC",0],MDT:["Medtronic","HC",2],REGN:["Regeneron","HC",1],CI:["Cigna","HC",3],HCA:["HCA Healthcare","HC",3],ZTS:["Zoetis","HC",0],
 "BRK.B":["Berkshire Hathaway","FIN",1],JPM:["JPMorgan","FIN",0],V:["Visa","FIN",1],MA:["Mastercard","FIN",1],BAC:["Bank of America","FIN",0],WFC:["Wells Fargo","FIN",0],GS:["Goldman Sachs","FIN",2],MS:["Morgan Stanley","FIN",2],AXP:["American Express","FIN",4],BLK:["BlackRock","FIN",2],SCHW:["Charles Schwab","FIN",2],C:["Citigroup","FIN",0],SPGI:["S&P Global","FIN",2],PGR:["Progressive","FIN",3],CB:["Chubb","FIN",3],PYPL:["PayPal","FIN",1],COIN:["Coinbase","FIN",2],HOOD:["Robinhood","FIN",2],KKR:["KKR","FIN",2],BX:["Blackstone","FIN",2],MMC:["Marsh McLennan","FIN",3],ICE:["Intercontinental Exchange","FIN",2],CME:["CME Group","FIN",2],COF:["Capital One","FIN",4],USB:["U.S. Bancorp","FIN",0],PNC:["PNC","FIN",0],
@@ -239,7 +244,7 @@ const LOCAL={"2GB":1,IFNNY:1,TOELY:1};      // Tradegate-ISIN gehört zur Heimat
 const YH={"2GB":"2GB.DE"};
 const ALIAS={SILVER:"SILBER",PLATINUM:"PLATIN",COPPER:"KUPFER",OIL:"WTI","ÖL":"WTI",OEL:"WTI",GAS:"ERDGAS",NATGAS:"ERDGAS",BITCOIN:"BTC"};
 function classify(t){t=ALIAS[t]||t;const a=ASSETS[t];if(a)return {t,n:a[0],sec:"CMD",ind:SECTORS.CMD.ind[a[1]],asset:true};
-  const k=KNOWN[t];if(!k)return null;const c={n:k[0],sec:k[1],ind:SECTORS[k[1]].ind[k[2]]};if(k[3])c.nous=true;if(ISIN[t])c.isin=ISIN[t];return c}
+  const k=KNOWN[t];if(!k)return null;const c={n:k[0],sec:k[1],ind:k[4]||SECTORS[k[1]].ind[k[2]]};if(k[3])c.nous=true;if(ISIN[t])c.isin=ISIN[t];return c}
 
 const DEMO=[["AAPL",3500,.8],["MSFT",3300,-.6],["NVDA",4200,2.4],["AVGO",1300,1.6],["ORCL",700,-1.1],["AMZN",2300,-.3],["TSLA",1100,-3.1],["HD",380,.3],["GOOGL",2500,.4],["META",1700,1.1],["NFLX",450,-.8],
   ["JPM",700,.2],["V",650,-.4],["BAC",340,.6],["LLY",750,-1.8],["UNH",300,-2.2],["ISRG",190,1.0],["WMT",780,.5],["COST",410,-.2],["GE",290,1.4],["CAT",200,2.1],["XOM",470,-.9],["NEE",160,.7],["LIN",210,.1]]
@@ -248,7 +253,7 @@ const DEMO=[["AAPL",3500,.8],["MSFT",3300,-.6],["NVDA",4200,2.4],["AVGO",1300,1.
 /* ===== Zustand ===== */
 const store={get(k,d){try{const v=localStorage.getItem("hm_"+k);return v?JSON.parse(v):d}catch(e){return d}},set(k,v){try{localStorage.setItem("hm_"+k,JSON.stringify(v))}catch(e){}}};
 let stocks=store.get("stocks",null)||DEMO.map(o=>({...o}));
-let settings=Object.assign({size:"bal",group:"ind",scale:"3",auto:"0",scope:"all",boost:"1",src:"auto"},store.get("settings",{}));
+let settings=Object.assign({size:"bal",group:"ind",scale:"3",auto:"0",scope:"main",boost:"1",src:"auto"},store.get("settings",{}));
 if(settings.group==="sector"&&!store.get("v2",false))settings.group="ind";
 if(!store.get("v3",false)){if(settings.size==="cap")settings.size="bal";store.set("v3",true);store.set("settings",settings)}
 let workerUrl=store.get("worker",""),apiKey=store.get("key",""),lastUpdate=store.get("updated",null);
@@ -258,6 +263,7 @@ const OLD={"Technologie":"IT","Halbleiter":"IT","Software":"IT","Konsum":"CD","K
 stocks.forEach(s=>{if(!s.sec){const c=classify(s.t);if(c){s.sec=c.sec;s.ind=c.ind;if(!s.n)s.n=c.n}else{s.sec=OLD[s.s]||"OTH";s.ind=""}}delete s.s});
 stocks.forEach(s=>{if(["PANW","CRWD","FTNT","ZS"].includes(s.t)&&s.ind==="Software")s.ind="Cybersecurity"});
 stocks.forEach(s=>{if(s.t==="2GB"&&s.manual&&!s.nous){s.manual=false;s.nous=true}if(s.isin===undefined&&ISIN[s.t])s.isin=ISIN[s.t];if(KNOWN[s.t]&&KNOWN[s.t][3])s.nous=true;if(ASSETS[s.t]&&!s.asset){s.asset=true;s.sec="CMD";s.ind=SECTORS.CMD.ind[ASSETS[s.t][1]];s.cap=null}});
+if(!store.get("v4",false)){stocks.forEach(s=>{if((s.t==="AMZN"||s.t==="TSLA")&&s.sec==="CD")s.sec="COM"});store.set("v4",true)}
 store.set("v2",true);save();
 const $=id=>document.getElementById(id);
 const canHover=matchMedia("(hover:hover) and (pointer:fine)").matches;
@@ -309,7 +315,12 @@ function squarify(items,x,y,w,h){
 /* ===== Rendern ===== */
 let selected=null;
 function allLevels(){return settings.group==="ind"?["sec","ind"]:settings.group==="sector"?["sec"]:[]}
-function scoped(){return settings.scope==="mine"?stocks.filter(s=>!s.idx):stocks}
+const MORE=new Set(["CD","CS","EN","FIN","CMD"]);   // 2. Heatmap: Konsum, Energie, Finanzen, Rohstoffe & Bitcoin
+if(settings.scope==="all")settings.scope="main";
+const inMore=s=>MORE.has(secOf(s));
+const scopeOf=(sc,list=stocks)=>sc==="mine"?list.filter(s=>!s.idx):sc==="more"?list.filter(inMore):list.filter(s=>!inMore(s));
+function scoped(){return scopeOf(settings.scope)}
+function tabs(){document.querySelectorAll("#tabs button").forEach(b=>{b.classList.toggle("on",b.dataset.v===settings.scope);b.querySelector("small").textContent=scopeOf(b.dataset.v).filter(s=>s.t).length})}
 function visible(){
   const lv=allLevels();path=path.slice(0,lv.length);
   return scoped().filter(s=>s.t&&weight(s)>0&&path.every((k,i)=>keyOf(s,lv[i])===k));
@@ -360,7 +371,7 @@ function tile(r){
   const fs=Math.min(21,(r.w-6)/(s.t.length*.68+.3),r.h/3.3);
   if(fs>=8&&r.h>=13){
     let h=`<div class="t" style="font-size:${fs}px">${esc(s.t)}</div>`;
-    if(!s.idx&&settings.scope==="all"&&stocks.some(o=>o.idx)&&r.w>s.t.length*fs*.68+20&&r.h>fs*1.6)h+=`<span class="own"></span>`;
+    if(!s.idx&&settings.scope!=="mine"&&stocks.some(o=>o.idx)&&r.w>s.t.length*fs*.68+20&&r.h>fs*1.6)h+=`<span class="own"></span>`;
     if(r.h>fs*2.2&&r.w>34)h+=`<div class="p" style="font-size:${Math.max(9,Math.min(16,fs*.74))}px">${fmtPct(s.dp,r.w<62?1:2)}</div>`;
     if(r.h>fs*3.4&&r.w>80&&s.n)h+=`<div class="n">${esc(s.n)}</div>`;
     if(r.h>fs*4.2&&r.w>90&&s.h>s.l){const p=v=>Math.max(0,Math.min(100,(v-s.l)/(s.h-s.l)*100));h+=`<div class="range">${s.o!=null?`<b style="left:${p(s.o)}%"></b>`:""}<i style="left:${p(s.c)}%"></i></div>`}
@@ -372,7 +383,7 @@ function tile(r){
 }
 function zoomTo(p){path=p;selected=null;render();const m=$("map");m.classList.remove("zoom");void m.offsetWidth;m.classList.add("zoom")}
 function secbar(){
-  const b=$("secbar");const hasIdx=stocks.some(s=>s.idx);$("scopeSeg").style.display=hasIdx?"":"none";
+  const b=$("secbar");tabs();
   if(settings.group==="none"){b.style.display="none";return}b.style.display="";
   const base=scoped().filter(s=>s.t&&weight(s)>0);
   const chip=(k,label,a,on)=>`<button data-k="${esc(k)}" class="${on?"on":""}" style="--c:${color(avg(a))}">${esc(label)}<small style="color:${pcCol(avg(a))}">${fmtPct(avg(a))}</small></button>`;
@@ -420,7 +431,7 @@ function legend(){const r=+settings.scale,st=[];for(let i=0;i<=20;i++){const t=-
   $("legbar").innerHTML=`<div class="lg" style="background:linear-gradient(90deg,${st.join(",")})"></div><div class="lgl"><span>−${r}\u202F%</span><span>0</span><span>+${r}\u202F%</span></div>`}
 function status(){
   const w=avg(scoped().filter(s=>s.t&&!s.asset));
-  $("status").innerHTML=`${settings.scope==="mine"?"Meine":"Alle"} <b style="color:${pcCol(w)}">${fmtPct(w)}</b> · ${lastUpdate?`${esc(lastSrc||"Live")} ${fmtT(lastUpdate)}`:"manuelle Werte"}${settings.src==="auto"?` · Auto→${MODE_N[resolveMode()]}`:""}`;
+  $("status").innerHTML=`${{main:"Alle",more:"Rohstoffe & Co.",mine:"Meine"}[settings.scope]} <b style="color:${pcCol(w)}">${fmtPct(w)}</b> · ${lastUpdate?`${esc(lastSrc||"Live")} ${fmtT(lastUpdate)}`:"manuelle Werte"}${settings.src==="auto"?` · Auto→${MODE_N[resolveMode()]}`:""}`;
   const secs=new Set(stocks.map(secOf)).size;
   const na=stocks.filter(s=>s.asset).length;$("sub").textContent=`${stocks.length-na} Aktien${na?` · ${na} Rohstoffe`:""} · ${secs} Sektoren`;
 }
@@ -637,6 +648,7 @@ document.querySelectorAll(".seg").forEach(seg=>{const k=seg.dataset.k;
   const sync=()=>seg.querySelectorAll("button").forEach(b=>b.classList.toggle("on",b.dataset.v===String(settings[k])));
   seg.querySelectorAll("button").forEach(b=>b.onclick=()=>{settings[k]=b.dataset.v;store.set("settings",settings);sync();render();if(k==="src"&&(apiKey||workerUrl))fetchLive()});sync()});
 $("edit").onclick=openEditor;
+document.querySelectorAll("#tabs button").forEach(b=>b.onclick=()=>{settings.scope=b.dataset.v;store.set("settings",settings);path=[];zoomTo([])});
 $("q").oninput=renderList;
 $("boost").checked=settings.boost==="1";$("boost").onchange=()=>{settings.boost=$("boost").checked?"1":"0";store.set("settings",settings);render()};
 $("ndxAdd").onclick=()=>{const added=[];for(const t of NDX){if(stocks.some(s=>s.t===t))continue;const c=classify(t)||{n:"",sec:"OTH",ind:""};const s={t,...c,cap:null,dp:0,idx:true};stocks.push(s);added.push(s)}
@@ -645,7 +657,7 @@ $("ndxAdd").onclick=()=>{const added=[];for(const t of NDX){if(stocks.some(s=>s.
   if(apiKey){flash(`${added.length} Werte hinzugefügt – lade Daten (ca. ${Math.ceil(added.length*2/55)} Min.) …`);fetchLive(added)}
   else flash(`${added.length} Werte hinzugefügt. Für Größe und Kurse Live-Daten laden.`)};
 let ndxArmed=false;$("ndxDel").onclick=()=>{if(!ndxArmed){ndxArmed=true;$("ndxDel").textContent="Sicher? Nochmal tippen";setTimeout(()=>{ndxArmed=false;$("ndxDel").textContent="Indexwerte entfernen"},3000);return}
-  stocks=stocks.filter(s=>!s.idx);settings.scope="all";store.set("settings",settings);document.querySelectorAll('.seg[data-k=scope] button').forEach(b=>b.classList.toggle("on",b.dataset.v==="all"));
+  stocks=stocks.filter(s=>!s.idx);
   path=[];save();renderList();render();ndxArmed=false;$("ndxDel").textContent="Indexwerte entfernen"};
 $("refresh").onclick=()=>fetchLive();
 $("addBtn").onclick=addStock;$("newT").onkeydown=e=>{if(e.key==="Enter")addStock()};
